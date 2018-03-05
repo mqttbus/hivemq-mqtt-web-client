@@ -78,6 +78,12 @@ var websocketclient = {
         websocketclient.render.show('publish');
         websocketclient.render.show('sub');
         websocketclient.render.show('messages');
+        var rndColor = websocketclient.getRandomColor();
+        $("#colorChooser").minicolors('value', rndColor);
+        websocketclient.subscribe("thereisnospoon"   , 2, $('#colorChooser').val().substring(1))
+        rndColor = websocketclient.getRandomColor();
+        $("#colorChooser").minicolors('value', rndColor);
+        websocketclient.subscribe("thereisnospoon/pc", 2, $('#colorChooser').val().substring(1))
     },
 
     'onFail': function (message) {
@@ -124,6 +130,64 @@ var websocketclient = {
         console.log(messageObj);
         messageObj.id = websocketclient.render.message(messageObj);
         websocketclient.messages.push(messageObj);
+        PNotify.desktop.permission();
+        (new PNotify({
+            title: messageObj.topic,
+            text: messageObj.payload,
+            desktop: {
+                desktop: true
+            }
+        })).get().click(function(e) {
+            if(ValidURL(messageObj.payload)){
+                window.open(messageObj.payload);
+            }
+            else{
+                var notice = (new PNotify({
+                    title: messageObj.topic,
+                    text: messageObj.payload,
+                    confirm: {
+                        prompt: true
+                    },
+                    buttons: {
+                        closer: false,
+                        sticker: false
+                    }
+                })).get().on('pnotify.confirm', function(e, notice, val) {
+                    notice.cancelRemove().update({
+                        title: 'You\'ve Chosen a Side',
+                        text: 'You want ' + $('<div/>').text(val).html() + '.',
+                        icon: true,
+                        type: 'info',
+                        hide: true,
+                        confirm: {
+                            prompt: false
+                        },
+                        buttons: {
+                            closer: true,
+                            sticker: true
+                        }
+                    });
+                }).on('pnotify.cancel', function(e, notice) {
+                    notice.cancelRemove().update({
+                        title: 'You Don\'t Want a Side',
+                        text: 'No soup for you!',
+                        icon: true,
+                        type: 'info',
+                        hide: true,
+                        confirm: {
+                            prompt: false
+                        },
+                        buttons: {
+                            closer: true,
+                            sticker: true
+                        }
+                    });
+                });
+                notice.get().click(function() {
+                    notice.remove();
+                });
+            }
+        });
     },
 
     'disconnect': function () {
@@ -340,3 +404,8 @@ var websocketclient = {
         }
     }
 };
+
+function ValidURL(str) {
+    pattern =  /^(?:(?:https?|ftp):\/\/)?(?:(?!(?:10|127)(?:\.\d{1,3}){3})(?!(?:169\.254|192\.168)(?:\.\d{1,3}){2})(?!172\.(?:1[6-9]|2\d|3[0-1])(?:\.\d{1,3}){2})(?:[1-9]\d?|1\d\d|2[01]\d|22[0-3])(?:\.(?:1?\d{1,2}|2[0-4]\d|25[0-5])){2}(?:\.(?:[1-9]\d?|1\d\d|2[0-4]\d|25[0-4]))|(?:(?:[a-z\u00a1-\uffff0-9]-*)*[a-z\u00a1-\uffff0-9]+)(?:\.(?:[a-z\u00a1-\uffff0-9]-*)*[a-z\u00a1-\uffff0-9]+)*(?:\.(?:[a-z\u00a1-\uffff]{2,})))(?::\d{2,5})?(?:\/\S*)?$/;
+    return pattern.test(str)
+  }
