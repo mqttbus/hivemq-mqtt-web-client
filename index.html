@@ -33,7 +33,7 @@ limitations under the License.
     <link rel="stylesheet" href="css/jquery.minicolors.css">
     <link rel="stylesheet" href="http://cdnjs.cloudflare.com/ajax/libs/fancybox/2.1.5/jquery.fancybox.min.css">
 </head>
-<body class="notconnected">
+<body class="notconnected" >
 
 <div id="header">
     <div>
@@ -303,6 +303,8 @@ limitations under the License.
 <script src="js/encoder.js"></script>
 <script src="js/app.js"></script>
 <script src="config.js"></script>
+<script type="text/javascript" src="pnotify.custom.min.js"></script>
+<link href="pnotify.custom.min.css" media="all" rel="stylesheet" type="text/css" />
 
 <script>
 
@@ -335,5 +337,18 @@ limitations under the License.
         websocketclient.render.toggle('sub');
     });
 </script>
+
+<!-- <script>
+    function myFunction() {
+        document.getElementById("connectButton").click();
+        document.getElementById("addSubButton").click();
+        document.getElementById("subscribeTopic").value="thereisnospoon";
+        document.getElementById("subscribeButton").click()
+        document.getElementById("subscribeTopic").value="thereisnospoon/pc";
+        document.getElementById("subscribeButton").click()
+        document.getElementById("publishTopic").value="thereisnospoon";
+        //thereisnospoon
+    }
+</script> -->
 </body>
 </html>
