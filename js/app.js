@@ -131,6 +131,8 @@ var websocketclient = {
         messageObj.id = websocketclient.render.message(messageObj);
         websocketclient.messages.push(messageObj);
         PNotify.desktop.permission();
+        PNotify.prototype.options.delay = 750;
+        //update_timer_display();
         (new PNotify({
             title: messageObj.topic,
             text: messageObj.payload,
@@ -141,52 +143,43 @@ var websocketclient = {
             if(ValidURL(messageObj.payload)){
                 window.open(messageObj.payload);
             }
-            else{
-                var notice = (new PNotify({
+                var pnotice = (new PNotify({
                     title: messageObj.topic,
-                    text: messageObj.payload,
+                    //text: messageObj.payload,
                     confirm: {
-                        prompt: true
+                        prompt: true,
+                        prompt_default: messageObj.payload
                     },
                     buttons: {
                         closer: false,
                         sticker: false
                     }
                 })).get().on('pnotify.confirm', function(e, notice, val) {
-                    notice.cancelRemove().update({
-                        title: 'You\'ve Chosen a Side',
-                        text: 'You want ' + $('<div/>').text(val).html() + '.',
-                        icon: true,
-                        type: 'info',
-                        hide: true,
-                        confirm: {
-                            prompt: false
-                        },
-                        buttons: {
-                            closer: true,
-                            sticker: true
-                        }
-                    });
+                    setClipboardText($('<div/>').text(val).html());
+                    // notice.cancelRemove().update({
+                    //     title: 'Copied',
+                    //     text: $('<div/>').text(val).html(),
+                    //     icon: true,
+                    //     type: 'info',
+                    //     hide: true,
+                    //     addClass: 'translucent',
+                    //     confirm: {
+                    //         prompt: false
+                    //     },
+                    //     buttons: {
+                    //         closer: false,
+                    //         sticker: true
+                    //     }
+                    // });
+                    notice.remove();
+
                 }).on('pnotify.cancel', function(e, notice) {
-                    notice.cancelRemove().update({
-                        title: 'You Don\'t Want a Side',
-                        text: 'No soup for you!',
-                        icon: true,
-                        type: 'info',
-                        hide: true,
-                        confirm: {
-                            prompt: false
-                        },
-                        buttons: {
-                            closer: true,
-                            sticker: true
-                        }
-                    });
-                });
-                notice.get().click(function() {
                     notice.remove();
                 });
-            }
+                // pnotice.get().click(function() {
+                //     notice.remove();
+                // });
+            
         });
     },
 
@@ -409,3 +402,53 @@ function ValidURL(str) {
     pattern =  /^(?:(?:https?|ftp):\/\/)?(?:(?!(?:10|127)(?:\.\d{1,3}){3})(?!(?:169\.254|192\.168)(?:\.\d{1,3}){2})(?!172\.(?:1[6-9]|2\d|3[0-1])(?:\.\d{1,3}){2})(?:[1-9]\d?|1\d\d|2[01]\d|22[0-3])(?:\.(?:1?\d{1,2}|2[0-4]\d|25[0-5])){2}(?:\.(?:[1-9]\d?|1\d\d|2[0-4]\d|25[0-4]))|(?:(?:[a-z\u00a1-\uffff0-9]-*)*[a-z\u00a1-\uffff0-9]+)(?:\.(?:[a-z\u00a1-\uffff0-9]-*)*[a-z\u00a1-\uffff0-9]+)*(?:\.(?:[a-z\u00a1-\uffff]{2,})))(?::\d{2,5})?(?:\/\S*)?$/;
     return pattern.test(str)
   }
+
+  function setClipboardText(text){
+    var id = "mycustom-clipboard-textarea-hidden-id";
+    var existsTextarea = document.getElementById(id);
+
+    if(!existsTextarea){
+        console.log("Creating textarea");
+        var textarea = document.createElement("textarea");
+        textarea.id = id;
+        // Place in top-left corner of screen regardless of scroll position.
+        textarea.style.position = 'fixed';
+        textarea.style.top = 0;
+        textarea.style.left = 0;
+
+        // Ensure it has a small width and height. Setting to 1px / 1em
+        // doesn't work as this gives a negative w/h on some browsers.
+        textarea.style.width = '1px';
+        textarea.style.height = '1px';
+
+        // We don't need padding, reducing the size if it does flash render.
+        textarea.style.padding = 0;
+
+        // Clean up any borders.
+        textarea.style.border = 'none';
+        textarea.style.outline = 'none';
+        textarea.style.boxShadow = 'none';
+
+        // Avoid flash of white box if rendered for any reason.
+        textarea.style.background = 'transparent';
+        document.querySelector("body").appendChild(textarea);
+        console.log("The textarea now exists :)");
+        existsTextarea = document.getElementById(id);
+    }else{
+        console.log("The textarea already exists :3")
+    }
+
+    existsTextarea.value = text;
+    existsTextarea.select();
+
+    try {
+        var status = document.execCommand('copy');
+        if(!status){
+            console.error("Cannot copy text");
+        }else{
+            console.log("The text is now on the clipboard");
+        }
+    } catch (err) {
+        console.log('Unable to copy.');
+    }
+}
